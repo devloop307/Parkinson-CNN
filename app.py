@@ -19,7 +19,7 @@ st.markdown("---")
 # Cargar modelo (con cacheo)
 @st.cache_resource
 def cargar_modelo():
-    modelo = tf.keras.models.load_model("modelo_parkinson.h5")
+    modelo = tf.keras.models.load_model("modelo_1.h5")
     return modelo
 
 modelo = cargar_modelo()
