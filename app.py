@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 import tensorflow as tf
+import os
 
 # Configuración de la página
 st.set_page_config(
@@ -16,28 +17,33 @@ st.markdown("<h1 style='text-align: center; color: #4B8BBE;'>🧠 Detección de 
 st.markdown("<p style='text-align: center;'>Sube una imagen de trazo para predecir la probabilidad de Parkinson.</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# Cargar modelo (con cacheo)
+# 🔹 Cargar modelo con compatibilidad y verificación
 @st.cache_resource
 def cargar_modelo():
-    from tensorflow.keras.models import load_model
-    from keras.src.saving.legacy import serialization as legacy_serialization
-    from keras.src.saving.legacy import saving_utils as legacy_saving_utils
+    modelo_path = "modelo_parkinson.h5"
 
-    # Intentar carga compatible
+    if not os.path.exists(modelo_path):
+        st.error(f"❌ No se encontró el modelo en la ruta: {modelo_path}")
+        st.stop()
+
     try:
-        modelo = load_model("modelo_parkinson.h5", compile=False)
-    except TypeError:
-        # Carga alternativa si falla
-        import h5py
-        import tensorflow as tf
-        with h5py.File("modelo_parkinson.h5", "r") as f:
-            model_config = f.attrs.get("model_config")
-        modelo = tf.keras.models.load_model("modelo_parkinson.h5", safe_mode=False, compile=False)
+        # Intento normal (Keras 3 / TF 2.15+)
+        modelo = tf.keras.models.load_model(modelo_path, compile=False)
+    except (TypeError, OSError, ValueError):
+        # Carga alternativa para versiones antiguas o incompatibles
+        try:
+            modelo = tf.keras.models.load_model(modelo_path, safe_mode=False, compile=False)
+        except Exception as e:
+            st.error(f"⚠️ Error al cargar el modelo: {e}")
+            st.stop()
+
+    st.success("✅ Modelo cargado correctamente.")
     return modelo
+
 
 modelo = cargar_modelo()
 
-# Función de predicción
+# 🔹 Función de predicción
 def predecir_imagen(imagen):
     img = imagen.convert("RGB").resize((224, 224))
     img_array = tf.keras.preprocessing.image.img_to_array(img)
@@ -46,7 +52,8 @@ def predecir_imagen(imagen):
     pred = modelo.predict(img_array)[0][0]
     return pred
 
-# Subir imagen
+
+# 🔹 Subida de imagen
 imagen_subida = st.file_uploader("Sube una imagen (trazo de espiral u onda)", type=["jpg", "jpeg", "png"])
 
 if imagen_subida:
