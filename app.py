@@ -19,7 +19,20 @@ st.markdown("---")
 # Cargar modelo (con cacheo)
 @st.cache_resource
 def cargar_modelo():
-    modelo = tf.keras.models.load_model("modelo_1.h5")
+    from tensorflow.keras.models import load_model
+    from keras.src.saving.legacy import serialization as legacy_serialization
+    from keras.src.saving.legacy import saving_utils as legacy_saving_utils
+
+    # Intentar carga compatible
+    try:
+        modelo = load_model("modelo_parkinson.h5", compile=False)
+    except TypeError:
+        # Carga alternativa si falla
+        import h5py
+        import tensorflow as tf
+        with h5py.File("modelo_parkinson.h5", "r") as f:
+            model_config = f.attrs.get("model_config")
+        modelo = tf.keras.models.load_model("modelo_parkinson.h5", safe_mode=False, compile=False)
     return modelo
 
 modelo = cargar_modelo()
