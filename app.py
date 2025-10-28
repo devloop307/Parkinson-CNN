@@ -17,11 +17,10 @@ st.markdown("<h1 style='text-align: center; color: #4B8BBE;'>🧠 Detección de 
 st.markdown("<p style='text-align: center;'>Sube una imagen de trazo para predecir la probabilidad de Parkinson.</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# 🔹 Cargar modelo (con compatibilidad para Keras 3)
+# Cargar modelo
 @st.cache_resource
 def cargar_modelo():
     try:
-        # Intento normal con compile=False (opción más estable)
         modelo = load_model("modelo_parkinson.h5", compile=False)
         st.success("✅ Modelo cargado correctamente.")
     except Exception as e:
@@ -31,7 +30,7 @@ def cargar_modelo():
 
 modelo = cargar_modelo()
 
-# 🔹 Función para predecir imagen
+# Función de predicción
 def predecir_imagen(imagen):
     img = imagen.convert("RGB").resize((224, 224))
     img_array = tf.keras.preprocessing.image.img_to_array(img)
@@ -40,7 +39,7 @@ def predecir_imagen(imagen):
     pred = modelo.predict(img_array)[0][0]
     return pred
 
-# 🔹 Subida de imagen
+# Subir imagen
 imagen_subida = st.file_uploader("Sube una imagen (trazo de espiral u onda)", type=["jpg", "jpeg", "png"])
 
 if imagen_subida is not None:
