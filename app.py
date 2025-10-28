@@ -25,7 +25,7 @@ def cargar_modelo():
 
     # Intentar carga compatible
     try:
-        modelo = load_model("modelo_1.h5", compile=False)
+        modelo = load_model("modelo_parkinson.h5", compile=False)
     except TypeError:
         # Carga alternativa si falla
         import h5py
